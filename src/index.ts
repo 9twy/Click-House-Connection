@@ -3,6 +3,8 @@ import { ClickHouseClient, createClient } from "@clickhouse/client";
 import { v4 as uuidv4 } from "uuid";
 import { faker } from "@faker-js/faker";
 import { rateLimit } from "express-rate-limit";
+import RedisStore from "rate-limit-redis";
+import { createClient as createRedisClient } from "redis";
 
 const app = express();
 
@@ -12,6 +14,10 @@ const client: ClickHouseClient = createClient({
   host: "http://localhost:8123",
   username: "default",
   password: "",
+});
+
+const redisClient = createRedisClient({
+  url: "redis://localhost:6379",
 });
 
 const createTableQuery = `
@@ -32,7 +38,11 @@ async function initDatabase() {
     console.error("Error", error);
   }
 }
+redisClient.connect().catch(console.error);
 const limiter = rateLimit({
+  store: new RedisStore({
+    sendCommand: (...args: string[]) => redisClient.sendCommand(args),
+  }),
   windowMs: 15 * 60 * 1000, // 15 minutes
   limit: 5, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
   message: "Too many requests from this IP.",

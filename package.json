@@ -20,6 +20,8 @@
   "dependencies": {
     "@clickhouse/client": "^1.7.0",
     "express": "^4.21.1",
-    "express-rate-limit": "^7.4.1"
+    "express-rate-limit": "^7.4.1",
+    "rate-limit-redis": "^4.2.0",
+    "redis": "^4.7.0"
   }
 }
